@@ -23,7 +23,9 @@
 	},
 	"homepage": "https://github.com/abhay-tank/jwt-auth#readme",
 	"dependencies": {
+		"bcrypt": "^5.0.0",
 		"dotenv": "^8.2.0",
-		"express": "^4.17.1"
+		"express": "^4.17.1",
+		"uniqid": "^5.2.0"
 	}
 }
