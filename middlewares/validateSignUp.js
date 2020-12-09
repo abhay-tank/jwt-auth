@@ -13,5 +13,8 @@ const validateUserSignUp = async (req, res, next) => {
 			res
 		);
 	}
-	next();
+	// Check for keys with empty input
+	next(validationKeys, req, res, next);
 };
+
+module.exports = validateUserSignUp;
