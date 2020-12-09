@@ -7,19 +7,32 @@ const ErrorResponse = require("../models/ErrorResponse");
 const sendErrorResponse = require("../helper/sendError");
 const sendResponse = require("../helper/sendResponse");
 
-const generateSalt = util.promisify(bcrypt.genSalt);
-const generateHash = util.promisify(bcrypt.hash);
+const file = path.join(__dirname, "..", "data", "users.json");
+let db = JSON.parse(fs.readFileSync(file, { encoding: "utf-8" }));
 
-const signUpUser = async (req, res, next) => {
+const signUpUser = async (req, res) => {
 	let [email, password] = [req.body.email, req.body.password];
-	// try {
-	// 	let salt = await generateSalt(10);
-	// 	let hash = await generateHash(password, salt);
-	// 	console.log(new User(email, hash));
-	// } catch (error) {
-	// 	console.error(error);
-	// 	return error;
-	// }
+	try {
+		let salt = await bcrypt.genSalt(10);
+		let hash = await bcrypt.hash(password, salt);
+		db.push(new User(email, hash));
+		fs.writeFile(file, JSON.stringify(db), (err) => {
+			if (err) {
+				return sendErrorResponse(
+					new ErrorResponse(
+						500,
+						"Unsuccessful",
+						"Error occurred while saving user"
+					),
+					res
+				);
+			}
+			sendResponse(201, "Success", "User Created successfully", res);
+		});
+	} catch (error) {
+		console.error(error);
+		return error;
+	}
 };
 
 const loginUser = (req, res, next) => {};

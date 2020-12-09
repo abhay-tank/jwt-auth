@@ -1,5 +1,5 @@
 const sendResponse = (statusCode, status, data, res) => {
-	res.status(statusCode).json({
+	return res.status(statusCode).json({
 		status: status,
 		data: data,
 	});
