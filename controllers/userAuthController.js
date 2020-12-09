@@ -1,4 +1,3 @@
-const util = require("util");
 const bcrypt = require("bcrypt");
 const fs = require("fs");
 const path = require("path");
@@ -16,7 +15,7 @@ const signUpUser = async (req, res) => {
 		let salt = await bcrypt.genSalt(10);
 		let hash = await bcrypt.hash(password, salt);
 		db.push(new User(email, hash));
-		fs.writeFile(file, JSON.stringify(db), (err) => {
+		fs.writeFile(file, JSON.stringify(db, null, 2), (err) => {
 			if (err) {
 				return sendErrorResponse(
 					new ErrorResponse(

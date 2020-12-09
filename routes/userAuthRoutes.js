@@ -4,14 +4,19 @@ const {
 	loginUser,
 	signOutUser,
 } = require("../controllers/userAuthController");
-
-const validateUserSignUp = require("../middlewares/validateSignUp");
-const validateEmptyString = require("../middlewares/validateEmptyString");
+import * as validators from "../middlewares/authValidations";
 const userAuthRouter = express.Router();
 
 userAuthRouter
 	.route("/signUp")
-	.post(validateUserSignUp, validateEmptyString, signUpUser);
+	.post(
+		validators.validateBody,
+		validators.validateEmail,
+		validators.validateEmailExists,
+		validators.validatePassword,
+		validators.hashPassword,
+		signUpUser
+	);
 userAuthRouter.route("/login").post(loginUser);
 userAuthRouter.route("/signOut").get(signOutUser);
 
