@@ -4,20 +4,38 @@ const {
 	loginUser,
 	signOutUser,
 } = require("../controllers/userAuthController");
-import * as validators from "../middlewares/authValidations";
+const {
+	validateBody,
+	validateEmailFormat,
+	validateEmailExists,
+	validatePasswordFormat,
+	validateConfirmPassword,
+	hashPassword,
+	comparePasswordHash,
+} = require("../middlewares/authValidations");
 const userAuthRouter = express.Router();
 
 userAuthRouter
 	.route("/signUp")
 	.post(
-		validators.validateBody,
-		validators.validateEmail,
-		validators.validateEmailExists,
-		validators.validatePassword,
-		validators.hashPassword,
+		validateBody,
+		validateEmailFormat,
+		validateEmailExists,
+		validatePasswordFormat,
+		validateConfirmPassword,
+		hashPassword,
 		signUpUser
 	);
-userAuthRouter.route("/login").post(loginUser);
+userAuthRouter
+	.route("/signIn")
+	.post(
+		validateBody,
+		validateEmailFormat,
+		validateEmailExists,
+		validatePasswordFormat,
+		comparePasswordHash,
+		loginUser
+	);
 userAuthRouter.route("/signOut").get(signOutUser);
 
 module.exports = userAuthRouter;

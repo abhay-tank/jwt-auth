@@ -5,16 +5,15 @@ const User = require("../models/User");
 const ErrorResponse = require("../models/ErrorResponse");
 const sendErrorResponse = require("../helper/sendError");
 const sendResponse = require("../helper/sendResponse");
+const { generateToken } = require("../helper/jwtAuth");
+const { config } = require("../config/config");
 
 const file = path.join(__dirname, "..", "data", "users.json");
 let db = JSON.parse(fs.readFileSync(file, { encoding: "utf-8" }));
 
 const signUpUser = async (req, res) => {
-	let [email, password] = [req.body.email, req.body.password];
 	try {
-		let salt = await bcrypt.genSalt(10);
-		let hash = await bcrypt.hash(password, salt);
-		db.push(new User(email, hash));
+		db.push(new User(req.body.email, req.body.password));
 		fs.writeFile(file, JSON.stringify(db, null, 2), (err) => {
 			if (err) {
 				return sendErrorResponse(
@@ -34,7 +33,23 @@ const signUpUser = async (req, res) => {
 	}
 };
 
-const loginUser = (req, res, next) => {};
+const loginUser = async (req, res, next) => {
+	let token = await generateToken(
+		{ email: req.currentUser.email },
+		config.JWT_SECRET
+	);
+	res.cookie("jwt", token);
+	sendResponse(
+		202,
+		"Successful",
+		[
+			{
+				jwt: token,
+			},
+		],
+		res
+	);
+};
 
 const signOutUser = (req, res, next) => {};
 module.exports = { signUpUser, loginUser, signOutUser };

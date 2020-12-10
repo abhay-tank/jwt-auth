@@ -25,15 +25,20 @@ const validateBody = (req, res, next) => {
 	next();
 };
 
-const validateEmail = (req, res, next) => {
+const validateEmailFormat = (req, res, next) => {
 	next();
 };
 
-const validatePassword = (req, res, next) => {
+const validatePasswordFormat = (req, res, next) => {
 	next();
 };
 
 const validateConfirmPassword = (req, res, next) => {
+	console.log(
+		"Validate confirm password ",
+		req.body.password,
+		req.body.confirmPassword
+	);
 	if (req.body.password !== req.body.confirmPassword) {
 		return sendErrorResponse(
 			new ErrorResponse(
@@ -48,13 +53,30 @@ const validateConfirmPassword = (req, res, next) => {
 };
 
 const validateEmailExists = (req, res, next) => {
-	if (db.includes((user) => user.email == req.body.email)) {
-		return sendErrorResponse(
-			new ErrorResponse(406, "Unsuccessful", "User already Exists"),
-			res
-		);
+	let currentUser = db.find((user) => {
+		return user.email === req.body.email;
+	});
+	console.log("Check if email exists", currentUser);
+	if (req.path == "/signUp") {
+		if (currentUser) {
+			return sendErrorResponse(
+				new ErrorResponse(406, "Unsuccessful", "User already Exists"),
+				res
+			);
+		} else {
+			return next();
+		}
+	} else {
+		if (currentUser) {
+			req.currentUser = currentUser;
+			return next();
+		} else {
+			return sendErrorResponse(
+				new ErrorResponse(404, "Unsuccessful", "User does not Exists"),
+				res
+			);
+		}
 	}
-	next();
 };
 
 const hashPassword = async (req, res, next) => {
@@ -73,11 +95,33 @@ const hashPassword = async (req, res, next) => {
 	}
 };
 
+const comparePasswordHash = async (req, res, next) => {
+	console.log("Current user", req.currentUser);
+	console.log("Comparing password", req.body.password);
+	try {
+		let result = await bcrypt.compare(
+			req.body.password,
+			req.currentUser.password
+		);
+		if (!result) {
+			throw new Error("Error authenticating");
+		}
+		next();
+	} catch (error) {
+		console.log(error);
+		return sendErrorResponse(
+			new ErrorResponse(500, "Unsuccessful", "Error authenticating user"),
+			res
+		);
+	}
+};
+
 module.exports = {
 	validateBody,
-	validateEmail,
+	validateEmailFormat,
 	validateEmailExists,
-	validatePassword,
+	validatePasswordFormat,
 	validateConfirmPassword,
 	hashPassword,
+	comparePasswordHash,
 };
